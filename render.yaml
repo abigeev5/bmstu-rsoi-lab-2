@@ -1,0 +1,74 @@
+services:
+  - type: web
+    name: rsoi-gateway
+    runtime: image
+    plan: free
+    region: frankfurt
+    image:
+      url: ghcr.io/abigeev5/bmstu-rsoi-lab-2/gateway-service:latest
+      creds:
+        fromRegistryCreds:
+          name: ghcr
+    healthCheckPath: /manage/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: RESERVATION_URL
+        sync: false
+      - key: PAYMENT_URL
+        sync: false
+      - key: LOYALTY_URL
+        sync: false
+      - key: REQUEST_TIMEOUT_MS
+        value: "60000"
+
+  - type: web
+    name: rsoi-reservation
+    runtime: image
+    plan: free
+    region: frankfurt
+    image:
+      url: ghcr.io/abigeev5/bmstu-rsoi-lab-2/reservation-service:latest
+      creds:
+        fromRegistryCreds:
+          name: ghcr
+    healthCheckPath: /manage/health
+    envVars:
+      - key: PORT
+        value: "8070"
+      - key: DATABASE_URL
+        sync: false
+
+  - type: web
+    name: rsoi-payment
+    runtime: image
+    plan: free
+    region: frankfurt
+    image:
+      url: ghcr.io/abigeev5/bmstu-rsoi-lab-2/payment-service:latest
+      creds:
+        fromRegistryCreds:
+          name: ghcr
+    healthCheckPath: /manage/health
+    envVars:
+      - key: PORT
+        value: "8060"
+      - key: DATABASE_URL
+        sync: false
+
+  - type: web
+    name: rsoi-loyalty
+    runtime: image
+    plan: free
+    region: frankfurt
+    image:
+      url: ghcr.io/abigeev5/bmstu-rsoi-lab-2/loyalty-service:latest
+      creds:
+        fromRegistryCreds:
+          name: ghcr
+    healthCheckPath: /manage/health
+    envVars:
+      - key: PORT
+        value: "8050"
+      - key: DATABASE_URL
+        sync: false
