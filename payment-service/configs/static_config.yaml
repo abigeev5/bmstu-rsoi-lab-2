@@ -39,3 +39,15 @@ components_manager:
             task_processor: main-task-processor
             throttling_enabled: false
             url_trailing_slash: strict-match
+
+        payment-service: {}
+
+        handler-payments:
+            path: /api/v1/payments
+            method: POST
+            task_processor: main-task-processor
+
+        handler-payment:
+            path: /api/v1/payments/{paymentUid}
+            method: GET,DELETE
+            task_processor: main-task-processor

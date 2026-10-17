@@ -39,3 +39,15 @@ components_manager:
             task_processor: main-task-processor
             throttling_enabled: false
             url_trailing_slash: strict-match
+
+        loyalty-service: {}
+
+        handler-loyalty:
+            path: /api/v1/loyalty
+            method: GET
+            task_processor: main-task-processor
+
+        handler-loyalty-counter:
+            path: /api/v1/loyalty/{action}
+            method: POST
+            task_processor: main-task-processor

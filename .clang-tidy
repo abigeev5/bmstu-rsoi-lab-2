@@ -18,11 +18,13 @@ Checks: >
   -modernize-use-nodiscard,
   -readability-identifier-length
 WarningsAsErrors: '*'
-HeaderFilterRegex: '.*/[a-z]+-service/src/.*'
+HeaderFilterRegex: '.*/([a-z]+-service/src|common)/.*'
 
 # Naming follows userver: types and functions in CamelCase, variables in lower_case,
 # private members with trailing '_', constants as kCamelCase.
 CheckOptions:
+  # Interfaces only need `virtual ~I() = default;`, without spelling out copy/move.
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: true
   readability-identifier-naming.NamespaceCase: lower_case
   readability-identifier-naming.ClassCase: CamelCase
   readability-identifier-naming.StructCase: CamelCase

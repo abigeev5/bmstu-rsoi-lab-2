@@ -39,3 +39,25 @@ components_manager:
             task_processor: main-task-processor
             throttling_enabled: false
             url_trailing_slash: strict-match
+
+        reservation-service: {}
+
+        handler-hotels:
+            path: /api/v1/hotels
+            method: GET
+            task_processor: main-task-processor
+
+        handler-hotel:
+            path: /api/v1/hotels/{hotelUid}
+            method: GET
+            task_processor: main-task-processor
+
+        handler-reservations:
+            path: /api/v1/reservations
+            method: GET,POST
+            task_processor: main-task-processor
+
+        handler-reservation:
+            path: /api/v1/reservations/{reservationUid}
+            method: GET,DELETE
+            task_processor: main-task-processor

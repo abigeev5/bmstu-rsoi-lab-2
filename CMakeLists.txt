@@ -44,6 +44,7 @@ if(CLANG_FORMAT_EXE)
             ${PROJECT_SOURCE_DIR}/${service}/*.cpp
             ${PROJECT_SOURCE_DIR}/${service}/*.hpp)
     endforeach()
+    list(APPEND RSOI_FORMAT_GLOBS ${PROJECT_SOURCE_DIR}/common/*.cpp ${PROJECT_SOURCE_DIR}/common/*.hpp)
     file(GLOB_RECURSE RSOI_FORMAT_SOURCES CONFIGURE_DEPENDS ${RSOI_FORMAT_GLOBS})
     add_custom_target(format
         COMMAND ${CLANG_FORMAT_EXE} -i ${RSOI_FORMAT_SOURCES}
@@ -55,6 +56,7 @@ endif()
 
 enable_testing()
 
+add_subdirectory(common)
 foreach(service IN LISTS RSOI_SERVICES)
     add_subdirectory(${service})
 endforeach()
