@@ -10,6 +10,11 @@ jobs:
   build:
     name: Autograding
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      checks: write
+      statuses: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -40,22 +45,17 @@ jobs:
             build-${{ hashFiles('CMakeLists.txt', 'deps/ubuntu-24.04.txt') }}-
             build-
 
+      # One build instead of debug + release: userver takes ~20 min per preset without a warm cache.
+      # Sanitizers stay available locally via the `debug` preset.
       - name: Build (with clang-tidy)
         run: |
           ccache -M 5G
-          cmake --preset debug
-          cmake --build --preset debug
+          cmake --preset release -DRSOI_CLANG_TIDY=ON
+          cmake --build --preset release
           ccache -s
 
       - name: Run unit tests
-        run: ctest --preset debug
-
-      - name: Build release binaries
-        run: |
-          cmake --preset release
-          cmake --build --preset release \
-            --target gateway-service reservation-service payment-service loyalty-service
-          ccache -s
+        run: ctest --preset release
 
       # The images only package the release binaries built above (see Dockerfile)
       - name: Build images
@@ -77,6 +77,39 @@ jobs:
           environment: v2/postman/environment.json
           delayRequest: 100
           reporters: '[ "cli" ]'
+
+      - name: Publish images
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          registry="ghcr.io/${GITHUB_REPOSITORY,,}"
+          for service in gateway-service reservation-service payment-service loyalty-service; do
+            for tag in latest "$GITHUB_SHA"; do
+              docker tag "$service" "$registry/$service:$tag"
+              docker push "$registry/$service:$tag"
+            done
+          done
+
+      - name: Deploy to Render
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          HOOK_RESERVATION_SERVICE: ${{ secrets.RENDER_DEPLOY_HOOK_RESERVATION }}
+          HOOK_PAYMENT_SERVICE: ${{ secrets.RENDER_DEPLOY_HOOK_PAYMENT }}
+          HOOK_LOYALTY_SERVICE: ${{ secrets.RENDER_DEPLOY_HOOK_LOYALTY }}
+          HOOK_GATEWAY_SERVICE: ${{ secrets.RENDER_DEPLOY_HOOK_GATEWAY }}
+        run: |
+          registry="ghcr.io/${GITHUB_REPOSITORY,,}"
+          for service in reservation-service payment-service loyalty-service gateway-service; do
+            var="HOOK_$(echo "${service//-/_}" | tr '[:lower:]' '[:upper:]')"
+            hook="${!var}"
+            if [ -z "$hook" ]; then
+              echo "::warning::$var is not set, $service is not deployed"
+              continue
+            fi
+            image=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))'               "$registry/$service:$GITHUB_SHA")
+            curl -fsS -o /dev/null -X POST "$hook&imgURL=$image"
+            echo "$service: deploy of $GITHUB_SHA started"
+          done
 
       - name: Show service logs
         if: failure()

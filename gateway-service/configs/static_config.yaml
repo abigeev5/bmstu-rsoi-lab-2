@@ -46,6 +46,9 @@ components_manager:
             loyalty-url: $loyalty-url
             loyalty-url#env: LOYALTY_URL
             loyalty-url#fallback: http://localhost:8050
+            request-timeout-ms: $request-timeout-ms
+            request-timeout-ms#env: REQUEST_TIMEOUT_MS
+            request-timeout-ms#fallback: 2000
 
         handler-hotels:
             path: /api/v1/hotels
